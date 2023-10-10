@@ -96,12 +96,17 @@ class ContractLine(models.Model):
 
         return self.env["contract.line.forecast.period"].create(values)
 
+    def generate_forecast_periods(self):
+        for contract_line in self:
+            if contract_line.contract_id.company_id.enable_contract_forecast:
+                contract_line.with_delay()._generate_forecast_periods()
+
     @api.model_create_multi
     def create(self, vals_list):
         contract_lines = super(ContractLine, self).create(vals_list)
         for contract_line in contract_lines:
             if contract_line.contract_id.company_id.enable_contract_forecast:
-                contract_line.with_delay()._generate_forecast_periods()
+                contract_line.generate_forecast_periods()
         return contract_lines
 
     @api.model
@@ -129,7 +134,5 @@ class ContractLine(models.Model):
         if any(
             [field in values for field in self._get_forecast_update_trigger_fields()]
         ):
-            for rec in self:
-                if rec.contract_id.company_id.enable_contract_forecast:
-                    rec.with_delay()._generate_forecast_periods()
+            self.generate_forecast_periods()
         return res
