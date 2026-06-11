@@ -169,10 +169,11 @@ class ContractAbstractContractLine(models.AbstractModel):
         self._set_recurrence_field("date_start")
 
     # pylint: disable=missing-return
-    @api.depends("contract_id.recurring_next_date", "contract_id.line_recurrence")
+    @api.depends("contract_id.line_recurrence")
     def _compute_recurring_next_date(self):
-        super()._compute_recurring_next_date()
+        res = super()._compute_recurring_next_date()
         self._set_recurrence_field("recurring_next_date")
+        return res
 
     @api.depends("display_type", "note_invoicing_mode")
     def _compute_is_recurring_note(self):
